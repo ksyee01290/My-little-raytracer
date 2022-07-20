@@ -7,7 +7,22 @@ def ppm_header(width,height):
 	a = "P3\n{} {}\n255".format(width,height)
 	return a;
     
+def hit_sphere(Ray,s,r):
+	DD = dot(Ray.direction, Ray.direction)
+	DO = dot(Ray.direction,Ray.origin)
+	PP = dot(s,s)
+	PD = dot(s,Ray.direction)
+	OO = dot(Ray.origin,Ray.origin)
+	OP = dot(Ray.origin,s)
+	RR = r*r
 
+	b=(2.0*DO - 2.0*PD)
+	disc = b*b -4.0*(DD)*(-2.0*OP+OO+PP-RR)
+
+	if disc < 0.0:
+		return -1
+	else:
+		return (-b -sqrt(disc))/(2.0*DD)
 
 def ray_color(Ray):
 	unit_direction = unit_vector(Ray.direction)
@@ -43,9 +58,16 @@ def present(width,ratio):
 			v=j/(image_height-1)
 			r=Ray(origin,(lower_left_corner+u*horizontal+v*vertical-origin))
 
-			#c= color(0.0,0.0,0.0)
-			c= ray_color(r)
+			c= color(0.0,0.0,0.0)
+			#c= ray_color(r)
 
+			sphere = point(0.0,0.0,-2.0)
+			t=hit_sphere(r,sphere,1.0)
+
+			if t >= 0.0:
+				c=color(0.0,1.0,0.0)
+			else:
+				c=ray_color(r)
 
 			arr.append(int(c[0]*255.999))
 			arr.append(int(c[1]*255.999))
