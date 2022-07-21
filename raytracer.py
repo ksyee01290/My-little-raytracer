@@ -65,7 +65,10 @@ def present(width,ratio):
 			t=hit_sphere(r,sphere,1.0)
 
 			if t >= 0.0:
-				c=color(0.0,1.0,0.0)
+				P = (Ray.at(r,t))
+				normal = unit_vector(P - sphere)
+				c=color((normal.x()+1.0)*0.5,(normal.y()+1.0)*0.5,(normal.z()+1.0)*0.5)
+				#c=color(1.0,0.0,0.0)
 			else:
 				c=ray_color(r)
 
