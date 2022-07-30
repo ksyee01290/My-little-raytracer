@@ -2,40 +2,27 @@ import cmath
 from math import sqrt
 from vector import unit_vector, vec3, color, point,dot
 from Ray import Ray
+from hittable import *
+from utility import *
+from hittable_list import *
 
-def ppm_header(width,height):
-	a = "P3\n{} {}\n255".format(width,height)
-	return a;
-    
-def hit_sphere(Ray,s,r):
-	DD = dot(Ray.direction, Ray.direction)
-	DO = dot(Ray.direction,Ray.origin)
-	PP = dot(s,s)
-	PD = dot(s,Ray.direction)
-	OO = dot(Ray.origin,Ray.origin)
-	OP = dot(Ray.origin,s)
-	RR = r*r
-
-	b=(2.0*DO - 2.0*PD)
-	disc = b*b -4.0*(DD)*(-2.0*OP+OO+PP-RR)
-
-	if disc < 0.0:
-		return -1
-	else:
-		return (-b -sqrt(disc))/(2.0*DD)
-
-def ray_color(Ray):
+def ray_color(Ray,world):
+	#hit 된게 있을때
+	rec = HitRecord()
+	#sphere = Sphere(1.0,point(0.0,0.0,+2.0))
+	if True == world.hit(Ray,0.0,INFINITY,rec):
+		return 0.5*(rec.normal+color(1.0,1.0,1.0))
+	#hit 된게 없을때
 	unit_direction = unit_vector(Ray.direction)
 	t= 0.5*(unit_direction.y()+1.0)
 	sunset = color(247.0/255.9,147.0/255.9,27.0/255.9)
 	bluesky = color(0.5,0.7,1.0)
 	my_color = color(240.0/255.9,0.0/255.9,15.0/255.9)
 
-	m=t*0.5
 	return (1.0-t)*color(1.0,1.0,1.0)+t*bluesky
 
 
-def present(width,ratio):
+def present(width,ratio,world):
 	#그림 사이즈
 	aspect_ratio = ratio
 	image_width = width
@@ -60,40 +47,39 @@ def present(width,ratio):
 
 			c= color(0.0,0.0,0.0)
 			#c= ray_color(r)
-
-			sphere = point(0.0,0.0,-2.0)
-			t=hit_sphere(r,sphere,1.0)
-
-			if t >= 0.0:
-				P = (Ray.at(r,t))
-				normal = unit_vector(P - sphere)
-				c=color((normal.x()+1.0)*0.5,(normal.y()+1.0)*0.5,(normal.z()+1.0)*0.5)
-				#c=color(1.0,0.0,0.0)
-			else:
-				c=ray_color(r)
+			c=ray_color(r,world)
 
 			arr.append(int(c[0]*255.999))
 			arr.append(int(c[1]*255.999))
 			arr.append(int(c[2]*255.999))
-	return arr;
+	return arr
 
 width = 800
 ratio = 16.0/9.0
 height = int(width/ratio)
+world = hittalbe_list()
 
-a=ppm_header(width,height)
-b=present(width,ratio)
+#Sp = Sphere(point(0.0,0.0,-1.0),0.5)
+#Tp = Sphere(point(0.0,-100.5,-1.0)100.0)
+#world.add(Sp)
+#world.add(Tp)
+
+world.add(Sphere(0.5,point(0.0,0.0,-1.0)))
+world.add(Sphere(100.0,point(0.0,-100.5,-1.0)))
+
+ppm_header = "P3\n{} {}\n255".format(width,height)
+output = present(width,ratio,world)
 
 f= open("my.ppm", 'w')
 #print(a,end='')
-f.write(a)
+f.write(ppm_header)
 
-for i in range(len(b)):
+for i in range(len(output)):
 
 	if i%3==0:
 		f.write("\n")
 		#print()
-	c= "{} ".format(b[i])
+	c= "{} ".format(output[i])
 	f.write(c)
 	#print("{} ".format(b[i]),end='')
 f.close()
